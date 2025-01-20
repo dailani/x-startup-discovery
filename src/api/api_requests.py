@@ -1,0 +1,40 @@
+import os
+
+from dotenv import load_dotenv
+import requests
+
+load_dotenv()
+
+# Replace with your Bearer Token from the Twitter Developer Portal
+BEARER_TOKEN = os.getenv('BEARER_TOKEN')
+
+# Set up the headers for authorization
+HEADERS = {
+    "Authorization": f"Bearer {BEARER_TOKEN}"
+}
+
+# Base URL for Twitter API v2
+BASE_URL = "https://api.twitter.com/2"
+
+
+
+# Print the result
+
+def search_multiple_usernames(usernames):
+    """
+    Fetch details for multiple usernames from the Twitter API.
+    Args:
+        usernames (str): Comma-separated usernames (e.g., "user1,user2").
+    Returns:
+        dict: JSON response from the API containing user details.
+    """
+    url = f"{BASE_URL}/users/by"
+    params = {
+        "usernames": usernames  # Comma-separated list of usernames
+    }
+    response = requests.get(url, headers=HEADERS, params=params)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Error: {response.status_code}, {response.text}")
+        return None
