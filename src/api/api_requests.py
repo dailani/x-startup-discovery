@@ -17,7 +17,6 @@ HEADERS = {
 BASE_URL = "https://api.twitter.com/2"
 
 
-
 # Print the result
 
 def search_multiple_usernames(usernames):
@@ -34,7 +33,11 @@ def search_multiple_usernames(usernames):
     }
     response = requests.get(url, headers=HEADERS, params=params)
     if response.status_code == 200:
-        return response.json()
+        return print(response.json())
     else:
         print(f"Error: {response.status_code}, {response.text}")
         return None
+
+
+if __name__ == "__main__":
+    search_multiple_usernames("3829831,369966635,19469573")

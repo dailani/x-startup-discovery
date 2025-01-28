@@ -22,9 +22,27 @@ redirect_uri = "https://127.0.0.1"
 # These variables indicate the participant of the one-to-one conversation and the message to add. A more ready-to-be
 # used example would have these passed in from some calling code.
 # Who is this DM being sent to? Reference their User ID.
-participant_id = "1465607856040943616"
+participant_id = "3829831"
 # Set the text of the message to be sent.
-text_message = "Hi, I am DMing you using the v2 DM one-to-one endpoint."
+text_message = """Good Morning Matt,
+
+I hope this message finds you well!
+
+My name is Max Ilse, and I’m with Blockchain Founders Group, a German VC firm. I came across your profile on Solana Colosseum and wanted to connect.
+
+We’re hosting our 7th Accelerator cohort, launching this April. It’s an 8-week program that culminates in the potential for a €100k investment.
+
+If this opportunity aligns with your goals, you can apply here: https://forms.gle/rFR6L6JpKQmWAchD6
+
+We’d love to see your application! Should you have any questions, please don’t hesitate to reach out.
+
+Best regards,  
+Max Ilse  
+Blockchain Founders Group
+Linkedin: https://www.linkedin.com/company/blockchain-founders
+
+"""
+
 
 
 # -----------------------------------------------------------------------------------------------------------------------
