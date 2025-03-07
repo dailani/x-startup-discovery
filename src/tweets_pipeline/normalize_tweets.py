@@ -2,7 +2,7 @@ from datetime import datetime
 import json
 import pandas as pd
 
-filename = "../../data/raw/tweets/firebase_Sun01252042.json"
+filename = "../../data/raw/tweets/firebase_Tue01251231.json"
 proccessed_filename = "../../data/processed/"
 def normalise_json_tweets(filename):
 
@@ -56,13 +56,13 @@ def normalise_json_tweets(filename):
         "author_id",
         "author_name",
         "author_username",
+        "tweet_url",
         "created_at",
+        "text",
         "retweet_count",
         "reply_count",
         "like_count",
-        "quote_count",
-        "tweet_url"
-        "text",
+        "quote_count"
     ]
 
 

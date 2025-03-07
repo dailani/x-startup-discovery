@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import pandas as pd
-
+import re
 import json
 
 # Read the CSV file
@@ -37,9 +37,7 @@ def get_twitter_ids():
     print("Sampled IDs:", sampled_ids)
 
 
-
-
-def save_json_to_file(data):
+def save_json_to_file(data, tweets_filename):
     """
     Save a Python dictionary as a JSON file.
 
@@ -51,9 +49,6 @@ def save_json_to_file(data):
     import os
 
     # Generate a unique filename with the current timestamp
-    timestamp = datetime.now().strftime("%a%m%y%H%M")  # Format: MonMMYYHHMM
-
-    tweets_filename = f"C:/Users/Dajlan/PycharmProjects/x-startup-discover/data/raw/tweets/firebase_{timestamp}.json"
 
     try:
 
@@ -63,6 +58,29 @@ def save_json_to_file(data):
     except Exception as e:
         print(f"An error occurred while saving the file: {e}")
 
+
+def filter_x_handles_with_score(csv_input: str, score: int) -> list:
+    """
+    Reads a CSV file, filters a specific column based on a condition, and returns the filtered values.
+
+    :param score:
+    :param csv_input: Path to the CSV file
+    :return: A list of filtered column values
+    """
+    # Read the CSV file
+    df = pd.read_csv(csv_input)
+
+
+
+    filtered_df = df[df['score'] >= score]
+
+    # Extract usernames from URLs
+    usernames = filtered_df['author_username'].apply(
+        lambda url: re.search(r"https://x.com/([^/]+)", url).group(1) if isinstance(url, str) and re.search(
+            r"https://x.com/([^/]+)", url) else None)
+
+    # Return the list of usernames (excluding None values)
+    return usernames.dropna().tolist()
 
 
 if __name__ == "__main__":

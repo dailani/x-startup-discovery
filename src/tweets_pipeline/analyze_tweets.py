@@ -1,8 +1,10 @@
+from datetime import datetime
 
 import pandas as pd
 
 from src.api.search_recent_tweets import  fetch_twitter_data
 from src.file_operations.file_operations import save_json_to_file
+from src.tweets_pipeline.normalize_tweets import normalise_json_tweets
 
 
 def analyze_tweets(json_response):
@@ -60,6 +62,11 @@ def analyze_tweets(json_response):
     print(tweets_df["mentions_ai"].sum())
 
 if __name__ == "__main__":
+    timestamp = datetime.now().strftime("%a%m%y%H%M")  # Format: MonMMYYHHMM
+
+    raw_tweets_filename = f"C:/Users/Dajlan/PycharmProjects/x-startup-discover/data/raw/tweets/firebase_{timestamp}.json"
+
     json_response = fetch_twitter_data()
-    save_json_to_file(json_response)
+    save_json_to_file(json_response,raw_tweets_filename)
+    normalise_json_tweets(raw_tweets_filename)
     analyze_tweets(json_response)
