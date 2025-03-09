@@ -14,8 +14,8 @@ def main():
     tweet_processor = TweetProcessor(tweet_analyzer)
 
     # Define input and output CSV paths
-    input_csv = "../../data/processed/tweets_with_author_info_Wed02251523.csv"
-    output_csv = "../../data/ranked/tweets_Wed02251523_ranked.csv"
+    input_csv = "../../data/processed/tweets_with_author_info_Wed02251312.csv"
+    output_csv = "../../data/ranked/tweets_Wed02251312_ranked.csv"
 
     # Process the tweets
     tweet_processor.process_file(input_csv, output_csv)

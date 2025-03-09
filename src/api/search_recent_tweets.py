@@ -19,11 +19,11 @@ def fetch_twitter_data():
 
     search_url = "https://api.twitter.com/2/tweets/search/recent"
     query_params = {
-        'query': '(#crypto OR #blockchain OR crypto OR blockchain OR Defi OR #defi OR Web3 OR #Web3) '
+        'query': '(#crypto OR #blockchain OR crypto OR blockchain OR Defi OR #defi OR Web3 OR #Web3)  '
                  '(#startup OR company OR build OR Building OR Project OR #Project OR startup OR We\'re OR launch OR '
-                 'Launching OR #launch)'
+                 'Launching OR #launch)  '
                  '(-breaking -news -meme)',
-        'tweet.fields': 'author_id,created_at,article,public_metrics,referenced_tweets',
+        'tweet.fields': 'author_id,created_at,article,public_metrics,note_tweet',
         'max_results': '100',
         'expansions': 'author_id,referenced_tweets.id,referenced_tweets.id.author_id'
     }

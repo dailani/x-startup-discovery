@@ -9,6 +9,17 @@ raw_filepath = "../../data/raw"
 processed_filepath = "../../data/processed"
 
 
+def get_column_from_df(df, column):
+    try:
+        if column not in df.columns:
+            raise ValueError(f"Column {column} not found in DataFrame")
+        tweet_ids = df[column].astype(str).values
+        return tweet_ids
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        return None
+
+
 def get_twitter_ids():
     """
     Get the Twitter IDs from the CSV file. Update Sent
@@ -69,8 +80,6 @@ def filter_x_handles_with_score(csv_input: str, score: int) -> list:
     """
     # Read the CSV file
     df = pd.read_csv(csv_input)
-
-
 
     filtered_df = df[df['score'] >= score]
 

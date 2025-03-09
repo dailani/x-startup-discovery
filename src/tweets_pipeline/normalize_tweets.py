@@ -2,79 +2,99 @@ from datetime import datetime
 import json
 import pandas as pd
 
-filename = "../../data/raw/tweets/firebase_Tue01251231.json"
-proccessed_filename = "../../data/processed/"
-def normalise_json_tweets(filename):
+from src.api.requests_templates.get_users import fetch_users, create_url
+from src.file_operations.file_operations import get_column_from_df
 
+processed_filename = "../../data/processed/"
+
+
+def normalise_json_tweets(filename):
     with open(filename, "r", encoding="utf-8") as f:
         twitter_json = json.load(f)
 
-    # 2. Normalize the "data" section (tweets)
+    # 1. Normalize the "data" section (tweets)
     tweets_df = pd.json_normalize(twitter_json, record_path=["data"])
+    # 1.1 get referenced tweet id
+    tweets_df["referenced_tweet_id"] = tweets_df["referenced_tweets"].apply(
+        lambda x: x[0]["id"] if isinstance(x, list) and len(x) > 0 else None)
+    # Drop the original 'referenced_tweets' column if no longer needed
+    tweets_df.drop(columns=["referenced_tweets"], inplace=True)
+
+    print(" tweets_df referenced_tweet_id", tweets_df["referenced_tweet_id"])
+    print("Tweets headers:", tweets_df.columns)
+
     tweets_df["tweet_url"] = "https://x.com/x/status/" + tweets_df["id"].astype(str)
+    print("# 1. Normalized tweets data:", tweets_df.columns)
 
-    # 3. Normalize the "includes.users" section (user info)
-    users_df = pd.json_normalize(twitter_json, record_path=["includes", "users"])
+    # 2. Normalize the "includes.tweets" section (for additional data, such as public metrics)
+    if "includes" in twitter_json and "tweets" in twitter_json["includes"]:
+        includes_df = pd.json_normalize(twitter_json, record_path=["includes", "tweets"])
+        print("# 2. Normalized includes.tweets data:", includes_df.columns)
 
-    # 4. Rename columns in users_df so we can merge easily and have descriptive names
-    #    We want:
-    #       - 'id' -> 'author_id'
-    #       - 'name' -> 'author_name'
-    #       - 'username' -> 'author_username'
-    users_df.rename(
-        columns={
+        includes_df = includes_df[
+            ["id",
+             "author_id",
+             "public_metrics.retweet_count",
+             "public_metrics.reply_count",
+             "public_metrics.like_count",
+             "public_metrics.quote_count",
+             "public_metrics.bookmark_count",
+             "public_metrics.impression_count",
+             "note_tweet.entities.mentions",
+             "note_tweet.text",
+             "note_tweet.entities.hashtags",
+             "note_tweet.entities.urls"
+             ]
+        ].rename(columns={"id": "tweet_id", "author_id": "referenced_author_id"})
+
+        # 3. Merge with tweets_df based on tweet id
+        tweets_df = tweets_df.merge(includes_df, left_on="referenced_tweet_id", right_on="tweet_id", how="outer",
+                                    suffixes=("_tweets", "_inc"))
+        print("# 3. Merged tweets with includes.tweets public metrics:", tweets_df.columns)
+
+    # 4. Normalize the "includes.users" section (user info)
+    if "includes" in twitter_json and "users" in twitter_json["includes"]:
+        users_df = pd.json_normalize(twitter_json, record_path=["includes", "users"])
+        print("# 4. Normalized includes.users data:", users_df.columns)
+
+        # Rename columns for clarity
+        users_df.rename(columns={
             "id": "author_id",
             "name": "author_name",
             "username": "author_username"
-        },
-        inplace=True
-    )
+        }, inplace=True)
 
+        # Merge with tweets_df on "author_id"
+        tweets_df = tweets_df.merge(users_df[["author_id", "author_name", "author_username"]],
+                                    on="author_id", how="left")
+        print("# 5. Merged tweets with includes.users:", tweets_df.columns)
 
-    # 5. Merge tweets with user info on "author_id"
-    merged_df = pd.merge(
-        tweets_df,
-        users_df[["author_id", "author_name", "author_username"]],
-        on="author_id",
-        how="left"
-    )
-    # 6. Flatten public_metrics into separate columns (optional, but often useful)
-    if "public_metrics" in merged_df.columns:
-        public_metrics_df = pd.json_normalize(merged_df["public_metrics"])
-        # Concatenate flattened metrics back to merged_df
-        merged_df = pd.concat(
-            [merged_df.drop(columns=["public_metrics"]), public_metrics_df],
-            axis=1
-        )
+    # 5. Convert author_username into a link
+    tweets_df["author_username"] = "https://x.com/" + tweets_df["author_username"].astype(str)
 
-    # 7. Convert author_username into a link
-    #    Instead of showing just "bob_abc", we show "https://x.com/bob_abc"
-    merged_df["author_username"] = "https://x.com/" + merged_df["author_username"].astype(str)
+    # 6. Get X handles from the "includes" part of the json response
+    x_referenced_id = get_column_from_df(tweets_df, 'referenced_author_id')
+    url = create_url(x_referenced_id)
+    x_referenced_handles_response = fetch_users(url)
+    referenced_users_df = pd.DataFrame(x_referenced_handles_response["data"])
 
-    # 8. Select columns you want in the final CSV
-    desired_columns = [
-        "author_id",
-        "author_name",
-        "author_username",
-        "tweet_url",
-        "created_at",
-        "text",
-        "retweet_count",
-        "reply_count",
-        "like_count",
-        "quote_count"
-    ]
+    referenced_users_df.rename(columns={
+        "id": "referenced_author_id",
+        "name": "referenced_author_name",
+        "created_at": "referenced_author_created_at",
+        "description": "referenced_author_description",
+        "username": "referenced_username"
+    }, inplace=True)
 
+    print("tweets_df: ", tweets_df["referenced_author_id"], "user_df: ", referenced_users_df["referenced_author_id"])
+    print("#6. Get X handles from referenced_tweet_ids", tweets_df.columns)
+    tweets_df = tweets_df.merge(referenced_users_df,
+                                on="referenced_author_id", how="outer")
 
-    # Make sure the columns exist (in case some columns are missing)
-    final_columns = [col for col in desired_columns if col in merged_df.columns]
-    final_df = merged_df[final_columns].copy()
-
-    # 9. Save to CSV
+    # 7. Save to CSV
     timestamp = datetime.now().strftime("%a%m%y%H%M")  # Format: MonMMYYHHMM
-    final_df.to_csv(proccessed_filename + f"tweets_with_author_info_{timestamp}.csv", index=False)
+    tweets_df.to_csv(processed_filename + f"tweets_with_author_info_{timestamp}.csv", index=False)
 
-    print("CSV file 'tweets_with_author_url.csv' created successfully.")
+    print("CSV file 'tweets_with_author_info.csv' created successfully:.", tweets_df.columns)
 
-if __name__ == "__main__":
-    normalise_json_tweets(filename)
+    return tweets_df
