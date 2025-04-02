@@ -1,7 +1,9 @@
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
+
 load_dotenv()
+
 
 class XAIClient:
     def __init__(self, api_key=None, base_url="https://api.x.ai/v1"):

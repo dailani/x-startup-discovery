@@ -1,25 +1,27 @@
 import pandas as pd
-from tweets_analyzer import TweetAnalyzer
+from pandas import DataFrame
+
+from .tweets_analyzer import TweetAnalyzer
 
 
 class TweetProcessor:
-    def __init__(self, analyzer: TweetAnalyzer):
+    def __init__(self, analyzer: TweetAnalyzer) -> DataFrame:
         self.analyzer = analyzer
 
-    def process_file(self, input_csv: str, output_csv: str):
+    def process_file(self, input_df: DataFrame, output_csv: str):
         """
-        Reads a CSV with tweets and author info, analyzes each tweet, and saves
+        Processes a DataFrame with tweets and author info, analyzes each tweet, and saves
         the results (including computed category, relevance score, and reasoning)
         to a new CSV.
 
-        The CSV is expected to have at least the following columns:
+        The DataFrame is expected to have at least the following columns:
           - "text": the text content of the tweet.
         """
         try:
-            df = pd.read_csv(input_csv)
+            df = input_df.copy()  # Create a copy to avoid modifying the original
             df.dropna(subset=["text"], inplace=True)
         except Exception as e:
-            print(f"Failed to read CSV: {e}")
+            print(f"Failed to process DataFrame: {e}")
             return
 
         categories = []
@@ -49,5 +51,6 @@ class TweetProcessor:
         try:
             df.to_csv(output_csv, index=False)
             print(f"Results saved to {output_csv}")
+            return df
         except Exception as e:
             print(f"Failed to write CSV: {e}")

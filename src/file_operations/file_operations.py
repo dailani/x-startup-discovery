@@ -4,6 +4,8 @@ import pandas as pd
 import re
 import json
 
+from pandas import DataFrame
+
 # Read the CSV file
 raw_filepath = "../../data/raw"
 processed_filepath = "../../data/processed"
@@ -70,16 +72,16 @@ def save_json_to_file(data, tweets_filename):
         print(f"An error occurred while saving the file: {e}")
 
 
-def filter_x_handles_with_score(csv_input: str, score: int) -> list:
+def filter_x_handles_with_score(ranked_df: DataFrame, score: int) -> list:
     """
     Reads a CSV file, filters a specific column based on a condition, and returns the filtered values.
 
+    :param ranked_df:
     :param score:
-    :param csv_input: Path to the CSV file
     :return: A list of filtered column values
     """
     # Read the CSV file
-    df = pd.read_csv(csv_input)
+    df = ranked_df.copy()
 
     filtered_df = df[df['score'] >= score]
 

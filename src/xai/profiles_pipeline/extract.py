@@ -2,9 +2,6 @@ from src.file_operations.file_operations import filter_x_handles_with_score
 from src.xai.json_formating import clean_json_text
 from src.xai.xai_client import XAIClient
 
-tweet_handles = filter_x_handles_with_score('../../../data/ranked/tweets_Wed02251523_ranked.csv', 3)
-print(tweet_handles)
-
 
 def extract_profile_info(x_handle: str, xai_client: XAIClient) -> dict:
     prompt = f"""

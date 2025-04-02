@@ -1,7 +1,7 @@
 import json
 
 from src.xai.json_formating import clean_json_text
-from xai_client import XAIClient
+from .xai_client import XAIClient
 
 
 class TweetAnalyzer:

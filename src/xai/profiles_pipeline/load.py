@@ -30,7 +30,7 @@ def load_startup_profiles(tweet_handles: []):
     ]
     timestamp = datetime.now().strftime("%a%m%y%H%M")  # Format: MonMMYYHHMM
 
-    with open(f"../../../data/profiles/startup_profiles_{timestamp}.csv", mode='w', newline='',
+    with open(f"C:/Users/Dajlan/PycharmProjects/x-startup-discover/data/profiles/startup_profiles_{timestamp}.csv", mode='w', newline='',
               encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerow(headers)
