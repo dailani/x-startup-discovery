@@ -8,18 +8,33 @@ from src.xai.tweets_analyzer import TweetAnalyzer
 from src.xai.tweets_processor import TweetProcessor
 from src.xai.xai_client import XAIClient
 
-if __name__ == "__main__":
+from prefect import flow  # Prefect flow and task decorators
+
+
+@flow(log_prints=True)
+def tweets_pipeline():
     timestamp = datetime.now().strftime("%a%m%y%H%M")  # Format: MonMMYYHHMM
     raw_tweets_filename = f"C:/Users/Dajlan/PycharmProjects/x-startup-discover/data/raw/tweets/firebase_{timestamp}.json"
     ranked_output_csv = f"../../data/ranked/tweets_{timestamp}_ranked.csv"
-    #1. Search recent twitter data
+    # 1. Search recent twitter data
     json_response = fetch_twitter_data()
-    save_json_to_file(json_response,raw_tweets_filename)
+    save_json_to_file(json_response, raw_tweets_filename)
 
-    #2. Normalize the Data into a Pandas Dataframe
+    # 2. Normalize the Data into a Pandas Dataframe
     normalized_tweets_df = normalise_json_tweets(raw_tweets_filename)
-    #analyze_tweets(json_response)
 
+    #3. Load to database
+
+    # analyze_tweets(json_response)
+
+
+def xai_pipeline():
+    timestamp = datetime.now().strftime("%a%m%y%H%M")  # Format: MonMMYYHHMM
+    raw_tweets_filename = f"C:/Users/Dajlan/PycharmProjects/x-startup-discover/data/raw/tweets/firebase_{timestamp}.json"
+    ranked_output_csv = f"../../data/ranked/tweets_{timestamp}_ranked.csv"
+    # 2. Normalize the Data into a Pandas Dataframe
+    normalized_tweets_df = normalise_json_tweets(raw_tweets_filename)
+    # analyze_tweets(json_response)
     xai_client = XAIClient()
 
     # Instantiate the tweet analyzer using the XAI client
@@ -28,13 +43,13 @@ if __name__ == "__main__":
     # Create a processor that will read, analyze, and write tweets with their scores
     tweet_processor = TweetProcessor(tweet_analyzer)
 
-    #3.Ranking
+    # 3.Ranking
     ranked_df = tweet_processor.process_file(normalized_tweets_df, ranked_output_csv)
 
-    #Extracting
+    # Extracting
     tweet_handles = filter_x_handles_with_score(ranked_df, 6)
     load_startup_profiles(tweet_handles)
 
-
-
-
+# Run the flow
+if __name__ == "__main__":
+    tweets_pipeline()
