@@ -1,6 +1,7 @@
 from datetime import datetime
-
 from src.api.search_recent_tweets import fetch_twitter_data
+from src.database.tweet_repo import load_tweets
+
 from src.file_operations.file_operations import save_json_to_file, filter_x_handles_with_score
 from src.tweets_pipeline.normalize_tweets import normalise_json_tweets
 from src.xai.profiles_pipeline.load import load_startup_profiles
@@ -8,7 +9,7 @@ from src.xai.tweets_analyzer import TweetAnalyzer
 from src.xai.tweets_processor import TweetProcessor
 from src.xai.xai_client import XAIClient
 
-from prefect import flow  # Prefect flow and task decorators
+from prefect import flow
 
 
 @flow(log_prints=True)
@@ -21,12 +22,20 @@ def tweets_pipeline():
     save_json_to_file(json_response, raw_tweets_filename)
 
     # 2. Normalize the Data into a Pandas Dataframe
-    normalized_tweets_df = normalise_json_tweets(raw_tweets_filename)
+    normalized_tweets_df = normalise_json_tweets(json_response)
 
-    #3. Load to database
+    # 3. Pass to DB insertion task
+    load_tweets(normalized_tweets_df)
 
     # analyze_tweets(json_response)
+    # 3. Pass to DB insertion task and store the result
+    db_status = load_tweets(normalized_tweets_df)
 
+    # ✅ Print the returned status for visibility in logs
+    print("📝 DB Insertion Summary:", db_status)
+
+    # Optional: you can return it too
+    return db_status
 
 def xai_pipeline():
     timestamp = datetime.now().strftime("%a%m%y%H%M")  # Format: MonMMYYHHMM
@@ -50,6 +59,9 @@ def xai_pipeline():
     tweet_handles = filter_x_handles_with_score(ranked_df, 6)
     load_startup_profiles(tweet_handles)
 
-# Run the flow
-if __name__ == "__main__":
+
+def call_once:
     tweets_pipeline()
+
+if __name__ == "__main__":
+    tweets_pipeline.serve(name="my-first-deployment", cron="* * * * *")

@@ -1,13 +1,13 @@
 import requests
 import os
 from dotenv import load_dotenv
-from prefect import  task  # Prefect flow and task decorators
+from prefect import task  # Prefect flow and task decorators
 
 # Load environment variables from .env file
 load_dotenv()
 
 
-@task
+@task(log_prints=True)
 def fetch_twitter_data():
     """
     Fetch recent tweets based on the query parameters using Twitter API.
@@ -24,7 +24,7 @@ def fetch_twitter_data():
         'query': '(#crypto OR #blockchain OR crypto OR blockchain OR Defi OR #defi OR Web3 OR #Web3)  '
                  '(#startup OR company OR build OR Building OR Project OR #Project OR startup OR We\'re OR launch OR '
                  'Launching OR #launch)  '
-                 '(-breaking -news -meme -is:retweet)',
+                 '(-breaking -news -meme -is:retweet -is:quote)',
         'tweet.fields': 'author_id,created_at,article,public_metrics,note_tweet',
         'max_results': '100',
         'expansions': 'author_id,referenced_tweets.id,referenced_tweets.id.author_id'

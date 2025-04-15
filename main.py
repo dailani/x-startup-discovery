@@ -1,22 +1,69 @@
-import csv
+from datetime import datetime
 
-from fastapi import FastAPI
-from src.api.api_requests import search_multiple_usernames
-import pandas as pd
+from prefect import flow
 
-app = FastAPI()
+from src.api.search_recent_tweets import fetch_twitter_data
+from src.database.tweet_repo import load_tweets
+from src.file_operations.file_operations import save_json_to_file, filter_x_handles_with_score
+from src.tweets_pipeline.normalize_tweets import normalise_json_tweets
+from src.xai.profiles_pipeline.load import load_startup_profiles
+from src.xai.tweets_analyzer import TweetAnalyzer
+from src.xai.tweets_processor import TweetProcessor
+from src.xai.xai_client import XAIClient
 
 
-@app.get("/")
-async def root():
-    return {"message": "Hello Worlds"}
+@flow(log_prints=True)
+def tweets_pipeline():
+    timestamp = datetime.now().strftime("%a%m%y%H%M")  # Format: MonMMYYHHMM
+    raw_tweets_filename = f"C:/Users/Dajlan/PycharmProjects/x-startup-discover/data/raw/tweets/firebase_{timestamp}.json"
+    ranked_output_csv = f"../../data/ranked/tweets_{timestamp}_ranked.csv"
+    # 1. Search recent twitter data
+    json_response = fetch_twitter_data()
+    save_json_to_file(json_response, raw_tweets_filename)
+
+    # 2. Normalize the Data into a Pandas Dataframe
+    normalized_tweets_df = normalise_json_tweets(json_response)
+
+    # 3. Pass to DB insertion task
+    load_tweets(normalized_tweets_df)
+
+    # analyze_tweets(json_response)
+    # 3. Pass to DB insertion task and store the result
+    db_status = load_tweets(normalized_tweets_df)
+
+    # ✅ Print the returned status for visibility in logs
+    print("📝 DB Insertion Summary:", db_status)
+
+    # Optional: you can return it too
+    return db_status
 
 
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
+def xai_pipeline():
+    timestamp = datetime.now().strftime("%a%m%y%H%M")  # Format: MonMMYYHHMM
+    raw_tweets_filename = f"C:/Users/Dajlan/PycharmProjects/x-startup-discover/data/raw/tweets/firebase_{timestamp}.json"
+    ranked_output_csv = f"../../data/ranked/tweets_{timestamp}_ranked.csv"
+    # 2. Normalize the Data into a Pandas Dataframe
+    normalized_tweets_df = normalise_json_tweets(raw_tweets_filename)
+    # analyze_tweets(json_response)
+    xai_client = XAIClient()
 
+    # Instantiate the tweet analyzer using the XAI client
+    tweet_analyzer = TweetAnalyzer(xai_client)
+
+    # Create a processor that will read, analyze, and write tweets with their scores
+    tweet_processor = TweetProcessor(tweet_analyzer)
+
+    # 3.Ranking
+    ranked_df = tweet_processor.process_file(normalized_tweets_df, ranked_output_csv)
+
+    # Extracting
+    tweet_handles = filter_x_handles_with_score(ranked_df, 6)
+    load_startup_profiles(tweet_handles)
+
+
+def call_once():
+    tweets_pipeline()
 
 
 if __name__ == "__main__":
-    print("")
+    tweets_pipeline()

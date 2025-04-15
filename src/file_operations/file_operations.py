@@ -9,6 +9,7 @@ from pandas import DataFrame
 # Read the CSV file
 raw_filepath = "../../data/raw"
 processed_filepath = "../../data/processed"
+from prefect import task  # Prefect flow and task decorators
 
 
 def get_column_from_df(df, column):
@@ -50,6 +51,7 @@ def get_twitter_ids():
     print("Sampled IDs:", sampled_ids)
 
 
+@task(log_prints=True)
 def save_json_to_file(data, tweets_filename):
     """
     Save a Python dictionary as a JSON file.
@@ -67,7 +69,7 @@ def save_json_to_file(data, tweets_filename):
 
         with open(tweets_filename, 'w') as json_file:
             json.dump(data, json_file, indent=4)
-        print(f"Data successfully saved to {raw_filepath}")
+        print(f"Data successfully saved to {tweets_filename}")
     except Exception as e:
         print(f"An error occurred while saving the file: {e}")
 

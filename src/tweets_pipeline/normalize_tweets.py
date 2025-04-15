@@ -9,14 +9,11 @@ from prefect import task  # Prefect flow and task decorators
 processed_filename = "../../data/processed/"
 
 
-@task
-def normalise_json_tweets(filename):
-    with open(filename, "r", encoding="utf-8") as f:
-        twitter_json = json.load(f)
-
+@task(log_prints=True)
+def normalise_json_tweets(twitter_json: dict):
     # 1. Normalize the "data" section (tweets)
     tweets_df = pd.json_normalize(twitter_json, record_path=["data"])
-    # 1.1 get referenced tweet id
+
     tweets_df["referenced_tweet_id"] = tweets_df["referenced_tweets"].apply(
         lambda x: x[0]["id"] if isinstance(x, list) and len(x) > 0 else None)
     # Drop the original 'referenced_tweets' column if no longer needed
@@ -36,9 +33,8 @@ def normalise_json_tweets(filename):
              "public_metrics.impression_count",
              "note_tweet.entities.mentions",
              "note_tweet.text",
-             "note_tweet.entities.hashtags",
              "note_tweet.entities.urls",
-             "text"
+             "text",
              ]
         ].rename(columns={"id": "tweet_id", "author_id": "referenced_author_id", "text": "referenced_text"})
 
@@ -51,9 +47,6 @@ def normalise_json_tweets(filename):
         tweets_df = tweets_df.merge(includes_df, left_on="referenced_tweet_id", right_on="tweet_id", how="outer",
                                     suffixes=("_tweets", "_inc"))
 
-        tweets_df["note_tweet.entities.urls_tweets"] = tweets_df["note_tweet.entities.urls_tweets"].apply(
-            lambda urls: [u.get("expanded_url") for u in urls] if isinstance(urls, list) else None
-        )
 
     # 4. Normalize the "includes.users" section (user info)
     if "includes" in twitter_json and "users" in twitter_json["includes"]:
