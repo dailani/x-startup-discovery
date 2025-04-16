@@ -65,3 +65,6 @@ async def run_tweets():
     tweets_pipeline()
     return {"status": "tweets pipeline triggered"}
 
+
+if __name__ == "__main__":
+    tweets_pipeline()
