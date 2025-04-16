@@ -6,9 +6,7 @@ import json
 
 from pandas import DataFrame
 
-# Read the CSV file
-raw_filepath = "../../data/raw"
-processed_filepath = "../../data/processed"
+
 from prefect import task  # Prefect flow and task decorators
 
 

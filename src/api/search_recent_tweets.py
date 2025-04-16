@@ -21,9 +21,12 @@ def fetch_twitter_data():
 
     search_url = "https://api.twitter.com/2/tweets/search/recent"
     query_params = {
-        'query': '(#crypto OR #blockchain OR crypto OR blockchain OR Defi OR #defi OR Web3 OR #Web3)  '
-                 '(#startup OR company OR build OR Building OR Project OR #Project OR startup OR We\'re OR launch OR '
-                 'Launching OR #launch)  '
+        'query': '( (Grant Program) OR grant OR grants OR (Builder Grants) OR (grant round) OR Funding OR (received '
+                 'grant) OR (content grant) )'
+                 '(Announcing OR startup OR launch '
+                 'OR '
+                 'Launching OR #launch OR Base OR Circle OR Alliance OR Superteam OR Superteam OR SolanaFndn OR '
+                 'Polygon OR Coinbase)'
                  '(-breaking -news -meme -is:retweet -is:quote)',
         'tweet.fields': 'author_id,created_at,article,public_metrics,note_tweet',
         'max_results': '100',

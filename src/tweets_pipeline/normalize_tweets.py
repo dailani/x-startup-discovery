@@ -6,7 +6,6 @@ from src.api.requests_templates.get_users import fetch_users, create_url
 from src.file_operations.file_operations import get_column_from_df
 from prefect import task  # Prefect flow and task decorators
 
-processed_filename = "../../data/processed/"
 
 
 @task(log_prints=True)
@@ -24,6 +23,7 @@ def normalise_json_tweets(twitter_json: dict):
     # 2. Normalize the "includes.tweets" section (for additional data, such as public metrics)
     if "includes" in twitter_json and "tweets" in twitter_json["includes"]:
         includes_df = pd.json_normalize(twitter_json, record_path=["includes", "tweets"])
+        print("inclujdes columns ", includes_df.columns)
         includes_df = includes_df[
             ["id",
              "author_id",
@@ -31,17 +31,10 @@ def normalise_json_tweets(twitter_json: dict):
              "public_metrics.reply_count",
              "public_metrics.like_count",
              "public_metrics.impression_count",
-             "note_tweet.entities.mentions",
              "note_tweet.text",
-             "note_tweet.entities.urls",
              "text",
              ]
         ].rename(columns={"id": "tweet_id", "author_id": "referenced_author_id", "text": "referenced_text"})
-
-        # Simplify the note_tweet.entities.urls field to contain only expanded URLs
-        includes_df["note_tweet.entities.urls"] = includes_df["note_tweet.entities.urls"].apply(
-            lambda urls: [u.get("expanded_url") for u in urls] if isinstance(urls, list) else None
-        )
 
         # 3. Merge with tweets_df based on tweet id
         tweets_df = tweets_df.merge(includes_df, left_on="referenced_tweet_id", right_on="tweet_id", how="outer",
@@ -82,9 +75,5 @@ def normalise_json_tweets(twitter_json: dict):
 
     tweets_df = tweets_df.merge(referenced_users_df,
                                 on="referenced_author_id", how="outer")
-
-    # 7. Save to CSV
-    timestamp = datetime.now().strftime("%a%m%y%H%M")  # Format: MonMMYYHHMM
-    tweets_df.to_csv(processed_filename + f"tweets_with_author_info_{timestamp}.csv", index=False)
 
     return tweets_df

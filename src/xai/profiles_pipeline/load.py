@@ -22,18 +22,3 @@ def load_startup_profiles(tweet_handles: []):
                 profile_data.get("evidence", {}).get("sentence", "null"),
                 profile_data.get("evidence", {}).get("post_URL", "null")
             ])
-
-    # Save to CSV
-    headers = [
-        "X_Handle", "amount", "type", "sentence",
-        "post_url"
-    ]
-    timestamp = datetime.now().strftime("%a%m%y%H%M")  # Format: MonMMYYHHMM
-
-    with open(f"C:/Users/Dajlan/PycharmProjects/x-startup-discover/data/profiles/startup_profiles_{timestamp}.csv", mode='w', newline='',
-              encoding='utf-8') as file:
-        writer = csv.writer(file)
-        writer.writerow(headers)
-        writer.writerows(startup_profiles)
-
-    print(f"Data successfully saved to ../../../profiles")

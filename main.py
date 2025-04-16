@@ -15,11 +15,9 @@ from src.xai.xai_client import XAIClient
 @flow(log_prints=True)
 def tweets_pipeline():
     timestamp = datetime.now().strftime("%a%m%y%H%M")  # Format: MonMMYYHHMM
-    raw_tweets_filename = f"C:/Users/Dajlan/PycharmProjects/x-startup-discover/data/raw/tweets/firebase_{timestamp}.json"
-    ranked_output_csv = f"../../data/ranked/tweets_{timestamp}_ranked.csv"
+
     # 1. Search recent twitter data
     json_response = fetch_twitter_data()
-    save_json_to_file(json_response, raw_tweets_filename)
 
     # 2. Normalize the Data into a Pandas Dataframe
     normalized_tweets_df = normalise_json_tweets(json_response)
@@ -39,11 +37,8 @@ def tweets_pipeline():
 
 
 def xai_pipeline():
-    timestamp = datetime.now().strftime("%a%m%y%H%M")  # Format: MonMMYYHHMM
-    raw_tweets_filename = f"C:/Users/Dajlan/PycharmProjects/x-startup-discover/data/raw/tweets/firebase_{timestamp}.json"
-    ranked_output_csv = f"../../data/ranked/tweets_{timestamp}_ranked.csv"
-    # 2. Normalize the Data into a Pandas Dataframe
-    normalized_tweets_df = normalise_json_tweets(raw_tweets_filename)
+
+
     # analyze_tweets(json_response)
     xai_client = XAIClient()
 
@@ -54,15 +49,13 @@ def xai_pipeline():
     tweet_processor = TweetProcessor(tweet_analyzer)
 
     # 3.Ranking
-    ranked_df = tweet_processor.process_file(normalized_tweets_df, ranked_output_csv)
+    #ranked_df = tweet_processor.process_file(normalized_tweets_df, ranked_output_csv)
 
     # Extracting
-    tweet_handles = filter_x_handles_with_score(ranked_df, 6)
-    load_startup_profiles(tweet_handles)
+   # tweet_handles = filter_x_handles_with_score(ranked_df, 6)
+   # load_startup_profiles(tweet_handles)
 
 
-def call_once():
-    tweets_pipeline()
 
 
 if __name__ == "__main__":
