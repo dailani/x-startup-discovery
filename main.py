@@ -10,7 +10,10 @@ from src.xai.profiles_pipeline.load import load_startup_profiles
 from src.xai.tweets_analyzer import TweetAnalyzer
 from src.xai.tweets_processor import TweetProcessor
 from src.xai.xai_client import XAIClient
+from fastapi import FastAPI
 
+
+app = FastAPI()
 
 @flow(log_prints=True)
 def tweets_pipeline():
@@ -57,6 +60,8 @@ def xai_pipeline():
 
 
 
-
-if __name__ == "__main__":
+@app.post("/run-tweets-pipeline")
+async def run_tweets():
     tweets_pipeline()
+    return {"status": "tweets pipeline triggered"}
+
