@@ -1,6 +1,12 @@
 # Use an official Python runtime
 FROM python:3.10-slim
 
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+
 # Set working directory in container
 WORKDIR /app
 

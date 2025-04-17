@@ -5,7 +5,7 @@ import os
 from contextlib import contextmanager
 from dotenv import load_dotenv
 
-
+import traceback
 
 try:
     load_dotenv("/secrets/x-startup-secrets")
@@ -29,6 +29,7 @@ def get_db_connection():
         yield conn, cursor
     except Exception as e:
         print("❌ Failed to connect to the database:", e)
+        traceback.print_exc()
         yield None, None
     finally:
         if conn:

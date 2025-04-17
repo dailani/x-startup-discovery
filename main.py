@@ -41,7 +41,6 @@ def tweets_pipeline(task_id: str):
         pipeline_status[task_id] = {"step": f"DB Insertion Summary: {db_status}:"}
 
 
-        # Optional: you can return it too
         return db_status
     except Exception as e:
         pipeline_status[task_id] = {"step": f"❌ Error: {str(e)}"}
@@ -94,7 +93,7 @@ def debug_db():
             user=os.getenv("USER"),
             password=os.getenv("POSTGRES_PASS"),
             host=os.getenv("HOST"),
-            port=os.getenv("PORT"),
+            port='5432',
             dbname=os.getenv("DBNAME"),
             sslmode='require'
         )
