@@ -1,10 +1,6 @@
 import requests
 import os
 import json
-from dotenv import load_dotenv
-import math
-
-load_dotenv()
 
 # To set your enviornment variables in your terminal run the following line:
 # export 'BEARER_TOKEN'='<your_bearer_token>'

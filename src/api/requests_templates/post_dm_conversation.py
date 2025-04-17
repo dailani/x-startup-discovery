@@ -6,8 +6,11 @@ import json
 import requests
 from requests_oauthlib import  OAuth2Session, OAuth1
 from dotenv import load_dotenv
-
-load_dotenv()
+# Load your mounted .env file
+try:
+    load_dotenv("/secrets/x-startup-secrets")
+except Exception as e:
+    print("❌ Failed to load .env secret:", e)
 
 # This example is set up to create a new group conversation and add a new DM to it.
 POST_DM_URL = "https://api.twitter.com/2/dm_conversations"

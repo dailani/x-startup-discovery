@@ -7,7 +7,6 @@ import json
 from pandas import DataFrame
 
 
-from prefect import task  # Prefect flow and task decorators
 
 
 def get_column_from_df(df, column):
@@ -49,7 +48,6 @@ def get_twitter_ids():
     print("Sampled IDs:", sampled_ids)
 
 
-@task(log_prints=True)
 def save_json_to_file(data, tweets_filename):
     """
     Save a Python dictionary as a JSON file.

@@ -4,11 +4,9 @@ import pandas as pd
 
 from src.api.requests_templates.get_users import fetch_users, create_url
 from src.file_operations.file_operations import get_column_from_df
-from prefect import task  # Prefect flow and task decorators
 
 
 
-@task(log_prints=True)
 def normalise_json_tweets(twitter_json: dict):
     # 1. Normalize the "data" section (tweets)
     tweets_df = pd.json_normalize(twitter_json, record_path=["data"])

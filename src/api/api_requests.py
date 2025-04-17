@@ -2,12 +2,14 @@ import os
 
 from dotenv import load_dotenv
 import requests
-
-load_dotenv()
+# Load your mounted .env file
+try:
+    load_dotenv("/secrets/x-startup-secrets")
+except Exception as e:
+    print("❌ Failed to load .env secret:", e)
 
 # Replace with your Bearer Token from the Twitter Developer Portal
 BEARER_TOKEN = os.getenv('BEARER_TOKEN')
-
 # Set up the headers for authorization
 HEADERS = {
     "Authorization": f"Bearer {BEARER_TOKEN}"

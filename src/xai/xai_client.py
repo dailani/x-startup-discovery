@@ -2,9 +2,11 @@ import os
 from openai import OpenAI
 from dotenv import load_dotenv
 
-load_dotenv()
-
-
+# Load your mounted .env file
+try:
+    load_dotenv("/secrets/x-startup-secrets")
+except Exception as e:
+    print("❌ Failed to load .env secret:", e)
 class XAIClient:
     def __init__(self, api_key=None, base_url="https://api.x.ai/v1"):
         # Use provided API key or retrieve from environment variable

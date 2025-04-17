@@ -1,13 +1,15 @@
 import requests
 import os
 from dotenv import load_dotenv
-from prefect import task  # Prefect flow and task decorators
+
+try:
+    load_dotenv("/secrets/x-startup-secrets")
+except Exception as e:
+    print("❌ Failed to load .env secret:", e)
 
 # Load environment variables from .env file
-load_dotenv()
 
 
-@task(log_prints=True)
 def fetch_twitter_data():
     """
     Fetch recent tweets based on the query parameters using Twitter API.
@@ -15,7 +17,7 @@ def fetch_twitter_data():
     Returns:
         dict: The JSON response from the Twitter API.
     """
-    bearer_token = os.environ.get("bearer_token")
+    bearer_token = os.environ.get("BEARER_TOKEN")
     if not bearer_token:
         raise ValueError("Bearer token not found. Ensure it is set in the environment variables.")
 

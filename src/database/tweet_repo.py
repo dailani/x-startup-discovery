@@ -1,10 +1,8 @@
 # tweet_repo.py
-from prefect import task
 import pandas as pd
 from src.database.connection import execute_query
 
 
-@task(log_prints=True)
 def load_tweets(tweet_df: pd.DataFrame):
     inserted_count = 0
     failed_rows = []

@@ -2,15 +2,16 @@
 
 import psycopg2
 import os
-from dotenv import load_dotenv
 from contextlib import contextmanager
-
-load_dotenv()
-
-from prefect import flow, task
+from dotenv import load_dotenv
 
 
-@task(log_prints=True)
+
+try:
+    load_dotenv("/secrets/x-startup-secrets")
+except Exception as e:
+    print("❌ Failed to load .env secret:", e)
+
 @contextmanager
 def get_db_connection():
     conn = None
@@ -20,7 +21,8 @@ def get_db_connection():
             password=os.getenv("POSTGRES_PASS"),
             host=os.getenv("HOST"),
             port=os.getenv("PORT"),
-            dbname=os.getenv("DBNAME")
+            dbname=os.getenv("DBNAME"),
+            sslmode='require'
         )
         cursor = conn.cursor()
         print("✅ Database connection established.")
@@ -34,7 +36,6 @@ def get_db_connection():
             print("🔒 Connection closed.")
 
 
-@task(log_prints=True)
 def execute_query(query, params=None, fetch=False):
     with get_db_connection() as (conn, cursor):
         if cursor:
