@@ -11,14 +11,16 @@ logging.basicConfig(
 )
 
 import traceback
-#"/secrets/x-startup-secrets"
-try:
-    load_dotenv("/secrets/x-startup-secrets")
-except Exception as e:
-    print("❌ Failed to load .env secret:", e)
+
 
 @contextmanager
 def get_db_connection():
+    # "/secrets/x-startup-secrets"
+    try:
+        load_dotenv("/secrets/x-startup-secrets")
+    except Exception as e:
+        print("❌ Failed to load .env secret:", e)
+
     conn = None
 
     try:
@@ -43,21 +45,32 @@ def get_db_connection():
             logging.info("🔒 Connection closed.")
 
 
+@contextmanager
+def get_db_connection_local():
+    try:
+        load_dotenv()
+    except Exception as e:
+        print("❌ Failed to load .env secret:", e)
 
-def execute_query(query, params=None, fetch=False):
-    with get_db_connection() as (conn, cursor):
-        if cursor:
-            try:
-                cursor.execute(query, params)
-                if fetch:
-                    result = cursor.fetchall()
-                    logging.info("✅ Query executed (with fetch): %s", query)
-                    return result
-                else:
-                    conn.commit()
-                    logging.info("✅ Query executed (commit): %s", query)
-                    return True
-            except Exception as e:
-                return "❌ Error executing query:", e
-        return None
+    conn = None
+    print("❌ Loading local secrets from .env file")
 
+    try:
+        conn = psycopg2.connect(
+            user=os.getenv("USER_LOCAL"),
+            password=os.getenv("POSTGRES_PASS"),
+            host=os.getenv("HOST_LOCAL"),
+            port='5432',
+            dbname=os.getenv("DBNAME_LOCAL"),
+        )
+        cursor = conn.cursor()
+        logging.info("✅ Database connection established.")
+        yield conn, cursor
+    except Exception as e:
+        logging.error("❌ Failed to connect to the database:", e)
+        logging.error(traceback.format_exc())
+        yield None, None
+    finally:
+        if conn:
+            conn.close()
+            logging.info("🔒 Connection closed.")
